@@ -1,5 +1,6 @@
 package org.discord.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class Server {
     private String imageUrl;
     private  String inviteCode;
     @DocumentReference(lazy = true)
+    @JsonIgnore
     private User user;
     @DocumentReference(lazy = true,collection = "member")
     private List<Member> members = new ArrayList<>();

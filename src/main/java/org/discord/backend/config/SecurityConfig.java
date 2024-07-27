@@ -54,7 +54,12 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(cors->cors.configurationSource(corsConfigurationSource()));
         http.authorizeHttpRequests((requests) ->
-                requests.requestMatchers("/api/v1/register","/api/v1/login","/api/v1/is-login","/api/v1/access-token").permitAll()
+                requests.requestMatchers("/api/v1/register",
+                                "/api/v1/login",
+                                "/api/v1/is-login",
+                                "/api/v1/access-token",
+                        "/api/v1/servers/server-and-userid"
+                        ).permitAll()
                         .anyRequest().authenticated()
         );
         http.oauth2Login(oauth2->oauth2

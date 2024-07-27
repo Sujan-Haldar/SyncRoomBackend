@@ -28,14 +28,13 @@ public class User {
     private String id;
     private  String userId;
     private  String name;
-    @Indexed(unique = true)
     private String email;
     private String password;
     private  String imageUrl;
     @DocumentReference(collection = "server",lazy = true)
-    private List<Server> users = new ArrayList<>();
+    private List<Server> servers = new ArrayList<>();
     @DocumentReference(collection = "member",lazy = true)
-    private List<Server> members = new ArrayList<>();
+    private List<Member> members = new ArrayList<>();
     @DocumentReference(collection = "channel",lazy = true)
     private List<Channel> channels = new ArrayList<>();
 

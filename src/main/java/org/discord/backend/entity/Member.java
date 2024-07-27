@@ -1,5 +1,6 @@
 package org.discord.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,8 +25,10 @@ public class Member {
     @Builder.Default
     private Role role = Role.GUEST;
     @DocumentReference(lazy = true,collection = "user")
+    @JsonIgnore
     private User user;
     @DocumentReference(lazy = true,collection = "server")
+    @JsonIgnore
     private Server server;
 
 

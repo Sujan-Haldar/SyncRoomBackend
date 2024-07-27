@@ -16,6 +16,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DiscordErrorResponse exceptionHandler(Exception e) {
-        return new DiscordErrorResponse("Oops! Something went wrong, Please try again!");
+        System.out.println(e.getMessage());
+        e.printStackTrace();
+        return new DiscordErrorResponse("E-10001");
     }
 }

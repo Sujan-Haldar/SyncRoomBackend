@@ -92,6 +92,7 @@ public class AuthController {
 
         if(token!=null && jwtUtils.validateJwtToken(token)){
             String mongoId = jwtUtils.getUserMongoId(token);
+            System.out.println(mongoId);
             HashMap<String,Object> map = new HashMap<>();
             map.put("status",true);
             map.put("access_token",jwtUtils.generateToken(mongoId));
