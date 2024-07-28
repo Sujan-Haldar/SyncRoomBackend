@@ -1,6 +1,7 @@
 package org.discord.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.discord.backend.dto.ServerPatchRequestDto;
 import org.discord.backend.dto.ServerRequestDto;
 import org.discord.backend.dto.ServerResponseDto;
 import org.discord.backend.dto.ServerResponseDtoForBasicInfo;
@@ -88,9 +89,14 @@ public class ServerService {
         );
         return ar.get();
     }
-    public Optional<ServerResponseDtoForBasicInfo> updateServerInviteCode(String serverId,String userId,String inviteCode) throws DiscordException {
-        Server server = serverRepository.findServerByIdAndUser(serverId,User.builder().id(userId).build()).orElseThrow(()->new DiscordException("",HttpStatus.BAD_REQUEST));
-        server.setInviteCode(inviteCode);
+    public Optional<ServerResponseDtoForBasicInfo> updateServerPatchByAdmin(ServerPatchRequestDto data) throws DiscordException {
+        Server server = serverRepository.findServerByIdAndUser(data.getServerId(),User.builder().id(data.getUserId()).build()).orElseThrow(()->new DiscordException("",HttpStatus.BAD_REQUEST));
+        if(data.getInviteCode() != null)
+            server.setInviteCode(data.getInviteCode());
+        if(data.getName() != null)
+            server.setName(data.getName());
+        if(data.getImageUrl() != null)
+            server.setImageUrl(data.getImageUrl());
         return Optional.of(convertToDto.serverToServerResponseDtoBasicInfo(serverRepository.save(server)));
 
     }

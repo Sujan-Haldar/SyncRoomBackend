@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServerInviteCodeUpdateRequestDto {
+public class ServerPatchRequestDto {
     private String serverId;
     private String userId;
     private String inviteCode;
+    private String imageUrl;
+    private String name;
 }
