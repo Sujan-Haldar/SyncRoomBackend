@@ -19,4 +19,5 @@ public interface ServerRepository extends MongoRepository<Server,String> {
     Optional<Server> findServerByIdAndMembersContains(String id,Member member);
     Optional<Server> findServerByIdAndUser(String id, User user);
     Optional<Server> findFirstByInviteCode(String inviteCode);
+
 }

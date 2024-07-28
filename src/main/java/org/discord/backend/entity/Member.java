@@ -36,5 +36,14 @@ public class Member {
     private Instant createdAt;
     @LastModifiedDate
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object obj){
+        if(obj == this) return  true;
+        if(!(obj instanceof Member)) return false;
+        Member member = (Member) obj;
+        return member.getId().equals(this.getId());
+    }
+
 }
 

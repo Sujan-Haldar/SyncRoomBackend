@@ -9,6 +9,7 @@ import org.discord.backend.util.Role;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class ConvertToDto {
@@ -32,15 +33,7 @@ public class ConvertToDto {
                         .sorted(Comparator.comparing(Channel::getCreatedAt))
                         .map(this::channelToChannelResponseDto)
                         .toList())
-                .members(server.getMembers()
-                        .stream()
-                        .sorted(Comparator.comparing(member ->{
-                            String temp =  member.getRole().toString();
-                            if(temp.equals(Role.MODERATOR.toString())) return 'C';
-                            return temp.charAt(0);
-                        }))
-                        .map(this::memberToMemberResponseDto)
-                        .toList())
+                .members(sortMember(server.getMembers()))
                 .build();
     }
 
@@ -65,5 +58,16 @@ public class ConvertToDto {
                 .imageUrl(user.getImageUrl())
                 .name(user.getName())
                 .build();
+    }
+    public List<MemberResponseDto> sortMember (List<Member> members){
+        return members
+                .stream()
+                .sorted(Comparator.comparing(member ->{
+                    String temp =  member.getRole().toString();
+                    if(temp.equals(Role.MODERATOR.toString())) return 'C';
+                    return temp.charAt(0);
+                }))
+                .map(this::memberToMemberResponseDto)
+                .toList();
     }
 }

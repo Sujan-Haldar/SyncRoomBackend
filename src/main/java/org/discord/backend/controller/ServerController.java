@@ -1,15 +1,10 @@
 package org.discord.backend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.discord.backend.dto.*;
-import org.discord.backend.entity.Server;
 import org.discord.backend.exception.DiscordException;
 import org.discord.backend.service.ServerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,9 +46,9 @@ public class ServerController {
                         .body(new DiscordSuccessResponse("",server)))
                 .orElseThrow(()->new DiscordException("",HttpStatus.BAD_REQUEST));
     }
-    @PatchMapping("/invite-code")
-    public ResponseEntity<DiscordSuccessResponse> updateServerInviteCode(@RequestBody ServerInviteCodeUpdateRequestDto body) throws DiscordException {
-        return serverService.updateServerInviteCode(body.getServerId(),body.getUserId(),body.getInviteCode())
+    @PatchMapping()
+    public ResponseEntity<DiscordSuccessResponse> updateServerPatchByAdmin(@RequestBody ServerPatchRequestDto body) throws DiscordException {
+        return serverService.updateServerPatchByAdmin(body)
                 .map(server->ResponseEntity
                         .ok(new DiscordSuccessResponse("",server)))
                 .orElseThrow(()->new DiscordException("",HttpStatus.BAD_REQUEST));
