@@ -60,6 +60,15 @@ public class ServerController {
                         .ok(new DiscordSuccessResponse("",server)))
                 .orElseThrow(()->new DiscordException("",HttpStatus.BAD_REQUEST));
     }
-
+    @PatchMapping("/leave")
+    public ResponseEntity<DiscordSuccessResponse> leaveServer(@RequestBody ServerPatchRequestDto body) throws DiscordException {
+        serverService.leaveServer(body);
+        return ResponseEntity.ok(new DiscordSuccessResponse(""));
+    }
+    @DeleteMapping()
+    public ResponseEntity<DiscordSuccessResponse> deleteServer(@RequestBody ServerDeleteRequestDto body) throws DiscordException {
+        serverService.deleteServer(body);
+        return ResponseEntity.ok(new DiscordSuccessResponse(""));
+    }
 
 }
