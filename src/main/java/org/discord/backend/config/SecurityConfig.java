@@ -58,7 +58,7 @@ public class SecurityConfig {
                                 "/api/v1/login",
                                 "/api/v1/is-login",
                                 "/api/v1/access-token",
-                        "/api/v1/member"
+                        "/api/v1/servers"
                         ).permitAll()
                         .anyRequest().authenticated()
         );

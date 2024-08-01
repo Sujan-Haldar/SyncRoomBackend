@@ -12,4 +12,7 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends MongoRepository<Member,String> {
     Optional<Member> findFirstByUserAndServer(User user, Server server);
+    void deleteMemberByUserAndServer(User user,Server server);
+
+    void deleteMembersByServer(Server server);
 }
