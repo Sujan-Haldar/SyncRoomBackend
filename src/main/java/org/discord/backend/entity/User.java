@@ -32,10 +32,13 @@ public class User {
     private String password;
     private  String imageUrl;
     @DocumentReference(collection = "server",lazy = true)
+    @Builder.Default
     private List<Server> servers = new ArrayList<>();
     @DocumentReference(collection = "member",lazy = true)
+    @Builder.Default
     private List<Member> members = new ArrayList<>();
     @DocumentReference(collection = "channel",lazy = true)
+    @Builder.Default
     private List<Channel> channels = new ArrayList<>();
 
 

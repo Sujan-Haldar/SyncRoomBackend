@@ -1,6 +1,8 @@
 package org.discord.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
+import org.discord.backend.cascade.ChannelCascade;
 import org.discord.backend.dto.ChannelCreateRequestDto;
 import org.discord.backend.dto.ChannelResponseDto;
 import org.discord.backend.dto.ChannelUpdateRequestDto;
@@ -24,8 +26,8 @@ public class ChannelService {
     private final UserRepository userRepository;
     private final ServerRepository serverRepository;
     private final  ConvertToDto convertToDto;
+    private final ChannelCascade channelCascade;
     public Optional<ChannelResponseDto> createChannel(ChannelCreateRequestDto data) throws DiscordException {
-        System.out.println(data);
         if(data.getName() ==null) throw  new DiscordException("", HttpStatus.BAD_REQUEST);
         if(data.getName().equalsIgnoreCase("general")) throw  new DiscordException("", HttpStatus.BAD_REQUEST);
         if(data.getType() ==null) throw  new DiscordException("", HttpStatus.BAD_REQUEST);
@@ -38,10 +40,7 @@ public class ChannelService {
                 .server(server)
                 .build();
         channel = channelRepository.save(channel);
-        user.getChannels().add(channel);
-        server.getChannels().add(channel);
-        userRepository.save(user);
-        serverRepository.save(server);
+        channelCascade.onAfterSaveChannel(channel);
         return Optional.of(convertToDto.channelToChannelResponseDto(channel));
     }
 
@@ -59,9 +58,8 @@ public class ChannelService {
     public  void deleteChannel(String channelId) throws DiscordException {
         if(channelId == null) throw  new DiscordException("",HttpStatus.BAD_REQUEST);
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
-        userRepository.deleteChannelFromUser(channel.getUser().getId(),channelId);
-        serverRepository.deleteChannelFromServer(channel.getServer().getId(),channelId);
         channelRepository.delete(channel);
+        channelCascade.onAfterDeleteChannel(channel);
     }
 
 }

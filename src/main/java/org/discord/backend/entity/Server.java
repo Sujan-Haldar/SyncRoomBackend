@@ -30,8 +30,10 @@ public class Server {
     @JsonIgnore
     private User user;
     @DocumentReference(lazy = true,collection = "member")
+    @Builder.Default
     private List<Member> members = new ArrayList<>();
     @DocumentReference(lazy = true,collection = "channel")
+    @Builder.Default
     private List<Channel> channels = new ArrayList<>();
 
     @CreatedDate
