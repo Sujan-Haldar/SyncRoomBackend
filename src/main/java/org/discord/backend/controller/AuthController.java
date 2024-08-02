@@ -68,6 +68,7 @@ public class AuthController {
                 }
             }
         }
+
         if(token!=null && jwtUtils.validateJwtToken(token)){
             HashMap<String,Object> map = new HashMap<>();
             map.put("is_login",true);

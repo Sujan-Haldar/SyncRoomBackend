@@ -1,10 +1,11 @@
 package org.discord.backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.discord.backend.dto.ServerPatchRequestDto;
-import org.discord.backend.dto.ServerRequestDto;
-import org.discord.backend.dto.ServerResponseDto;
-import org.discord.backend.dto.ServerResponseDtoForBasicInfo;
+import org.bson.types.ObjectId;
+import org.discord.backend.cascade.ChannelCascade;
+import org.discord.backend.cascade.MemberCascade;
+import org.discord.backend.cascade.ServerCascade;
+import org.discord.backend.dto.*;
 import org.discord.backend.entity.Channel;
 import org.discord.backend.entity.Member;
 import org.discord.backend.entity.Server;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,6 +34,9 @@ public class ServerService {
     private final MemberRepository memberRepository;
     private final ChannelRepository channelRepository;
     private  final  ConvertToDto convertToDto;
+    private final MemberCascade memberCascade;
+    private final ServerCascade serverCascade;
+    private final ChannelCascade channelCascade;
     public Optional<ServerResponseDtoForBasicInfo> findFirstServerByMemberProfileId(String profileId) throws DiscordException {
         User user = userRepository.findById(profileId).orElseThrow(()->new DiscordException("E-10002", HttpStatus.NOT_FOUND));;
         return serverRepository.findFirstByMembersContaining(user.getMembers()).map(convertToDto::serverToServerResponseDtoBasicInfo);
@@ -48,30 +53,34 @@ public class ServerService {
                .user(user)
                .build();
        Server savedServer = serverRepository.save(server);
+       serverCascade.onAfterSaveServer(savedServer);
        Member member = Member.builder()
                .user(user)
                .role(Role.ADMIN)
                .server(savedServer)
                .build();
        Member savedMember = memberRepository.save(member);
+       memberCascade.onAfterSaveMember(savedMember);
        Channel channel = Channel.builder()
                .name("general")
                .type(ChannelType.TEXT)
                .user(user)
+               .server(server)
                .build();
        Channel savedChannel = channelRepository.save(channel);
-       List<Member> members = new ArrayList<>();
-       List<Channel> channels = new ArrayList<>();
-       members.add(savedMember);
-       channels.add(savedChannel);
-
-       savedServer.setChannels(channels);
-       savedServer.setMembers(members);
-       user.getMembers().add(savedMember);
-       user.getChannels().add(savedChannel);
-       user.getServers().add(savedServer);
-       userRepository.save(user);
-       savedServer = serverRepository.save(savedServer);
+       channelCascade.onAfterSaveChannel(savedChannel);
+//       List<Member> members = new ArrayList<>();
+//       List<Channel> channels = new ArrayList<>();
+//       members.add(savedMember);
+//       channels.add(savedChannel);
+//
+//       savedServer.setChannels(channels);
+//       savedServer.setMembers(members);
+//       user.getMembers().add(savedMember);
+//       user.getChannels().add(savedChannel);
+//       user.getServers().add(savedServer);
+//       userRepository.save(user);
+//       savedServer = serverRepository.save(savedServer);
        return Optional.of(convertToDto.serverToServerResponseDtoBasicInfo(savedServer));
 
     }
@@ -113,10 +122,28 @@ public class ServerService {
                .role(Role.GUEST)
                .build();
        member = memberRepository.save(member);
-        System.out.println(member);
-       user.getMembers().add(member);
-       userRepository.save(user);
-       server.getMembers().add(member);
-       return Optional.of(convertToDto.serverToServerResponseDtoBasicInfo(serverRepository.save(server)));
+       memberCascade.onAfterSaveMember(member);
+       return Optional.of(convertToDto.serverToServerResponseDtoBasicInfo(server));
     }
+    public  void leaveServer(ServerPatchRequestDto data) throws DiscordException {
+        if(data.getServerId() == null) throw new DiscordException("",HttpStatus.BAD_REQUEST);
+        if(data.getUserId() == null) throw new DiscordException("",HttpStatus.BAD_REQUEST);
+
+        Member member = memberRepository.
+                findFirstByUserAndServer(User.builder().id(data.getUserId()).build(),
+                        Server.builder().id(data.getServerId()).build())
+                .orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
+        if(member.getRole().toString().equals(Role.ADMIN.toString())) throw new DiscordException("",HttpStatus.BAD_REQUEST);
+        memberRepository.delete(member);
+        memberCascade.onAfterDeleteMember(member);
+    }
+    public void deleteServer(ServerDeleteRequestDto data) throws DiscordException{
+        if(data.getServerId() == null) throw new DiscordException("",HttpStatus.BAD_REQUEST);
+        if(data.getUserId() == null) throw new DiscordException("",HttpStatus.BAD_REQUEST);
+        Server server = serverRepository.findById(data.getServerId()).orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
+        if(!server.getUser().getId().equals(data.getUserId())) throw new DiscordException("",HttpStatus.BAD_REQUEST);
+        serverRepository.delete(server);
+        serverCascade.onAfterDeleteServer(server);
+    }
+
 }
