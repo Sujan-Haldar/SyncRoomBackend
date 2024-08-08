@@ -28,11 +28,12 @@ public class JWTUtils {
         return  null;
     }
 
-    public String generateToken(String mongoId){
+    public String generateToken(String mongoId ,boolean isAccessToken){
+        int jwtExpireTime = isAccessToken ? 900000:jwtExpirationMs;
         return Jwts.builder()
                 .subject(mongoId)
                 .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .expiration(new Date((new Date()).getTime() + jwtExpireTime))
                 .signWith(key())
                 .compact();
     }

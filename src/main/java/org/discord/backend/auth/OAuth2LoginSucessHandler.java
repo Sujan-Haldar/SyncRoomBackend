@@ -64,7 +64,7 @@ public class OAuth2LoginSucessHandler extends SavedRequestAwareAuthenticationSuc
             }
 
         }
-        String authToken = jwtUtils.generateToken(users.getFirst().getId());
+        String authToken = jwtUtils.generateToken(users.getFirst().getId(),false);
         Cookie cookie = new Cookie("DISCORDTOKEN", authToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);

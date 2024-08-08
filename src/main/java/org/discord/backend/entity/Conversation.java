@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.discord.backend.util.ChannelType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,27 +15,24 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Document("channel")
+@Document("conversation")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class Channel {
+public class Conversation {
     @Id
     private String id;
-    private String name;
-    @Builder.Default
-    private ChannelType type = ChannelType.TEXT;
-    @DocumentReference(lazy = true,collection = "user")
-    @JsonIgnore
-    private User user;
-    @DocumentReference(lazy = true,collection = "server")
-    @JsonIgnore
-    private Server server;
-    @DocumentReference(lazy = true,collection = "message")
+
+    @DocumentReference(lazy = true,collection = "member")
+    private Member memberOne;
+    @DocumentReference(lazy = true,collection = "member")
+    private Member memberTwo;
+
+    @DocumentReference(lazy = true,collection = "direct_message")
     @Builder.Default
     @JsonIgnore
-    private List<Message> messages = new ArrayList<>();
+    private List<DirectMessage> directMessages = new ArrayList<>();
 
     @CreatedDate
     private Instant createdAt;

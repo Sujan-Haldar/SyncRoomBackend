@@ -14,6 +14,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
+    @GetMapping("/{userId}/{serverId}")
+    public ResponseEntity<DiscordSuccessResponse> getMemberByUserAndServerId(@PathVariable String userId,@PathVariable String serverId) throws DiscordException {
+        return memberService.getMemberByUserAndServerId(userId,serverId)
+                .map(member->ResponseEntity.ok(new DiscordSuccessResponse("",member)))
+                .orElseThrow(()->new DiscordException("",HttpStatus.BAD_REQUEST));
+    }
+
     @PatchMapping()
     public ResponseEntity<DiscordSuccessResponse> updateMember(@RequestBody MemberRequestDto body) throws DiscordException {
         return memberService.updateMember(body).
