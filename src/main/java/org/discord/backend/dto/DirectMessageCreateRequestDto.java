@@ -4,14 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.discord.backend.util.Role;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberResponseDto {
-    private String id;
-    private Role role;
-    private UserResponseDto user;
+public class DirectMessageCreateRequestDto {
+    private String serverId;
+    private String conversationId;
+    private String userId;
+    private String content;
+    private String fileUrl;
 }

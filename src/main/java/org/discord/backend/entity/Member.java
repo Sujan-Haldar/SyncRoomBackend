@@ -13,6 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document("member")
 @NoArgsConstructor
@@ -30,7 +32,22 @@ public class Member {
     @DocumentReference(lazy = true,collection = "server")
     @JsonIgnore
     private Server server;
-
+    @DocumentReference(lazy = true,collection = "message")
+    @Builder.Default
+    @JsonIgnore
+    private List<Message> messages = new ArrayList<>();
+    @DocumentReference(lazy = true,collection = "conversation")
+    @Builder.Default
+    @JsonIgnore
+    private List<Conversation> conversationsInitiated = new ArrayList<>();
+    @DocumentReference(lazy = true,collection = "conversation")
+    @Builder.Default
+    @JsonIgnore
+    private List<Conversation> conversationsReceived = new ArrayList<>();
+    @DocumentReference(lazy = true,collection = "direct_message")
+    @Builder.Default
+    @JsonIgnore
+    private List<DirectMessage> directMessages = new ArrayList<>();
 
     @CreatedDate
     private Instant createdAt;

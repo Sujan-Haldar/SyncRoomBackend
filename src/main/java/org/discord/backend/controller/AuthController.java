@@ -2,12 +2,15 @@ package org.discord.backend.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.discord.backend.dto.AuthRequest;
 import org.discord.backend.dto.DiscordSuccessResponse;
 import org.discord.backend.dto.UserDto;
 import org.discord.backend.entity.User;
 import org.discord.backend.exception.DiscordException;
+import org.discord.backend.repository.UserRepository;
+import org.discord.backend.service.ConvertToDto;
 import org.discord.backend.service.UserService;
 import org.discord.backend.util.JWTUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +29,14 @@ import java.util.Map;
 @RestController
 @Slf4j
 @RequestMapping("/api/v1")
+@RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JWTUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JWTUtils jwtUtils;
+    private final UserRepository userRepository;
+    private final ConvertToDto convertToDto;
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserDto userDto){
 
@@ -71,13 +73,15 @@ public class AuthController {
 
         if(token!=null && jwtUtils.validateJwtToken(token)){
             HashMap<String,Object> map = new HashMap<>();
+            User user = userRepository.findById(jwtUtils.getUserMongoId(token)).orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
             map.put("is_login",true);
-            map.put("id",jwtUtils.getUserMongoId(token));
+            map.put("id", user.getId());
+            map.put("user", convertToDto.userToUserResponseDto(user));
             return  ResponseEntity.ok().body(new DiscordSuccessResponse("",map));
 
         }
         else{
-            throw new DiscordException("",HttpStatus.UNAUTHORIZED);
+            throw new DiscordException("You are no longer login",HttpStatus.UNAUTHORIZED);
         }
     }
     @GetMapping("/access-token")
@@ -93,13 +97,12 @@ public class AuthController {
 
         if(token!=null && jwtUtils.validateJwtToken(token)){
             String mongoId = jwtUtils.getUserMongoId(token);
-            System.out.println(mongoId);
             HashMap<String,Object> map = new HashMap<>();
             map.put("status",true);
-            map.put("access_token",jwtUtils.generateToken(mongoId));
+            map.put("access_token",jwtUtils.generateToken(mongoId,true));
             return  ResponseEntity.ok().body(new DiscordSuccessResponse("",map));
         }else{
-            throw new DiscordException("",HttpStatus.UNAUTHORIZED);
+            throw new DiscordException("You are no longer login",HttpStatus.UNAUTHORIZED);
         }
 
     }

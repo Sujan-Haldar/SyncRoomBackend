@@ -1,10 +1,7 @@
 package org.discord.backend.service;
 
 import org.discord.backend.dto.*;
-import org.discord.backend.entity.Channel;
-import org.discord.backend.entity.Member;
-import org.discord.backend.entity.Server;
-import org.discord.backend.entity.User;
+import org.discord.backend.entity.*;
 import org.discord.backend.util.Role;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +54,35 @@ public class ConvertToDto {
                 .email(user.getEmail())
                 .imageUrl(user.getImageUrl())
                 .name(user.getName())
+                .build();
+    }
+    public ConversationResponseDto coversationToConversationResponseDto(Conversation conversation){
+        return ConversationResponseDto.builder()
+                .id(conversation.getId())
+                .memberOne(memberToMemberResponseDto(conversation.getMemberOne()))
+                .memberTwo(memberToMemberResponseDto(conversation.getMemberTwo()))
+                .build();
+    }
+    public  MessageResponseDto messageToMessageResponseDto (Message message){
+        return MessageResponseDto.builder()
+                .id(message.getId())
+                .content(message.getContent())
+                .fileUrl(message.getFileUrl())
+                .member(this.memberToMemberResponseDto(message.getMember()))
+                .createdAt(message.getCreatedAt().toString())
+                .updated(message.isUpdated())
+                .deleted(message.isDeleted())
+                .build();
+    }
+    public  MessageResponseDto directMessageToMessageResponseDto (DirectMessage message){
+        return MessageResponseDto.builder()
+                .id(message.getId())
+                .content(message.getContent())
+                .fileUrl(message.getFileUrl())
+                .member(this.memberToMemberResponseDto(message.getMember()))
+                .createdAt(message.getCreatedAt().toString())
+                .updated(message.isUpdated())
+                .deleted(message.isDeleted())
                 .build();
     }
     public List<MemberResponseDto> sortMember (List<Member> members){
