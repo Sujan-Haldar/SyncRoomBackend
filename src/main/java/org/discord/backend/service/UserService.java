@@ -1,5 +1,6 @@
 package org.discord.backend.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.discord.backend.entity.User;
 import org.discord.backend.repository.UserRepository;
@@ -10,14 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public User createUser(User user){
-        User newUser = userRepository.save(user);
-        return newUser;
+        return userRepository.save(user);
     }
     public List<User> getUsersByUserId(String userId){
         Optional<User> users =userRepository.findUsersByUserId(userId);

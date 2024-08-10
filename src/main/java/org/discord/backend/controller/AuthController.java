@@ -2,17 +2,19 @@ package org.discord.backend.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.discord.backend.dto.AuthRequest;
-import org.discord.backend.dto.DiscordSuccessResponse;
-import org.discord.backend.dto.UserDto;
+import org.discord.backend.dto.*;
 import org.discord.backend.entity.User;
 import org.discord.backend.exception.DiscordException;
 import org.discord.backend.repository.UserRepository;
+import org.discord.backend.service.AuthService;
 import org.discord.backend.service.ConvertToDto;
+import org.discord.backend.service.OTPService;
 import org.discord.backend.service.UserService;
 import org.discord.backend.util.JWTUtils;
+import org.discord.backend.util.OTPType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,38 +30,37 @@ import java.util.Map;
 
 @RestController
 @Slf4j
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final PasswordEncoder passwordEncoder;
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
     private final JWTUtils jwtUtils;
     private final UserRepository userRepository;
     private final ConvertToDto convertToDto;
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDto userDto){
+    private final AuthService authService;
+    private final OTPService otpService;
+    @PostMapping("/sign-up")
+    public ResponseEntity<DiscordSuccessResponse> signUp(@RequestBody UserRegisterDto body, HttpServletResponse response) throws DiscordException, InterruptedException {
+        UserResponseDto user = authService.signUpUser(body);
+        response.addCookie(authService.generateCookie(user.getId()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new DiscordSuccessResponse("S-10005",user));
 
-        User user = User.builder()
-                .name(userDto.getName())
-                .email(userDto.getEmail())
-                .password(passwordEncoder.encode(userDto.getPassword()))
-                .build();
-        userService.createUser(user);
-        return  ResponseEntity.ok().body("REgistered");
     }
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest authRequest) throws DiscordException {
-        try {
-            Authentication authentication =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
-            if(authentication.isAuthenticated())
-                return  ResponseEntity.ok().body("Login");
-        }catch (BadCredentialsException e){
-            throw new DiscordException("Wrong username or password",HttpStatus.BAD_REQUEST);
-        }
-        return null;
+    @PostMapping("/sign-in")
+    public ResponseEntity<DiscordSuccessResponse> signIn(@RequestBody AuthRequest body,HttpServletResponse response) throws DiscordException {
+        UserResponseDto user = authService.signInUser(body);
+        response.addCookie(authService.generateCookie(user.getId()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new DiscordSuccessResponse("S-10006",user));
     }
-
+    @GetMapping("otp")
+    public ResponseEntity<DiscordSuccessResponse> sendOtp(@RequestParam String email, @RequestParam OTPType type) throws DiscordException {
+        otpService.sendOtpToEmail(email,type);
+        return  ResponseEntity.ok(new DiscordSuccessResponse("S-10007"));
+    }
+    @PatchMapping("forget-password")
+    public ResponseEntity<DiscordSuccessResponse> forgetPassword(@RequestBody ForgetPasswordRequestDto body) throws DiscordException {
+        authService.forgetPassword(body);
+        return ResponseEntity.status(HttpStatus.OK).body(new DiscordSuccessResponse("S-10008"));
+    }
     @GetMapping("/is-login")
     public ResponseEntity<DiscordSuccessResponse> checkAuthentication(HttpServletRequest request) throws DiscordException {
         String token = null;
@@ -70,7 +71,6 @@ public class AuthController {
                 }
             }
         }
-
         if(token!=null && jwtUtils.validateJwtToken(token)){
             HashMap<String,Object> map = new HashMap<>();
             User user = userRepository.findById(jwtUtils.getUserMongoId(token)).orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
@@ -81,7 +81,7 @@ public class AuthController {
 
         }
         else{
-            throw new DiscordException("You are no longer login",HttpStatus.UNAUTHORIZED);
+            throw new DiscordException("E-10013",HttpStatus.UNAUTHORIZED);
         }
     }
     @GetMapping("/access-token")
@@ -102,10 +102,19 @@ public class AuthController {
             map.put("access_token",jwtUtils.generateToken(mongoId,true));
             return  ResponseEntity.ok().body(new DiscordSuccessResponse("",map));
         }else{
-            throw new DiscordException("You are no longer login",HttpStatus.UNAUTHORIZED);
+            throw new DiscordException("E-10013",HttpStatus.UNAUTHORIZED);
         }
 
     }
 
-
+    @GetMapping("/sign-out")
+    public ResponseEntity<DiscordSuccessResponse> signOut(HttpServletResponse response){
+        Cookie cookie = new Cookie("DISCORDTOKEN", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60);
+        response.addCookie(cookie);
+        return ResponseEntity.ok(new DiscordSuccessResponse("S-10009"));
+    }
 }

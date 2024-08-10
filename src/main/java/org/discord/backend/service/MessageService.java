@@ -26,7 +26,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
-    private final ServerRepository serverRepository;
     private final MemberRepository memberRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;

@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface UserRepository extends MongoRepository<User,String> {
     @Query(value = "{'email': ?0}")
     Optional<User> findUsersByEmail(String email);
+    Optional<User> findFirstByEmail(String email);
     @Query(value = "{'userId': ?0}")
     Optional<User> findUsersByUserId(String userId);
     @Query("{'id': ?0}")

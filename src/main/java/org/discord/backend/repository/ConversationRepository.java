@@ -13,7 +13,9 @@ import java.util.Optional;
 @Repository
 public interface ConversationRepository extends MongoRepository<Conversation,String> {
     Optional<Conversation> findFirstByMemberOneAndMemberTwo(Member memberOne,Member memberTwo);
-    Optional<Conversation> findFirstByIdAndMemberOne_IdOrMemberTwo_Id(String id, String memberOne_id, String memberTwo_id);
+
+    @Query("{'id': ?0 , '$or': [{'memberOne': ?1},{'memberTwo': ?1}]}")
+    Optional<Conversation> findFirstByIdAndMemberOneOrMemberTwoId(String id, ObjectId memberId);
 
     @Query("{'id': ?0}")
     @Update("{'$push': {'directMessages': ?1}}")
