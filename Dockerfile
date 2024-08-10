@@ -14,6 +14,6 @@ COPY --from=build /app/target/*.jar /app/app.jar
 
 # Expose the port that your Spring Boot app runs on
 EXPOSE 8080
-
+EXPOSE 8081
 # Run the Spring Boot application
 CMD ["java", "-jar", "/app/app.jar"]
