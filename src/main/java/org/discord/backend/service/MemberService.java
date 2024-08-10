@@ -22,8 +22,6 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final ConvertToDto convertToDto;
-    private final UserRepository userRepository;
-    private final ServerRepository serverRepository;
     private final MemberCascade memberCascade;
     public Optional<MemberResponseDto> updateMember(MemberRequestDto data) throws DiscordException {
         if(data.getId() == null) throw new DiscordException("", HttpStatus.BAD_REQUEST);

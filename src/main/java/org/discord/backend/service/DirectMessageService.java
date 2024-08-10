@@ -1,6 +1,7 @@
 package org.discord.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.discord.backend.cascade.DirectMessageCascade;
 import org.discord.backend.dto.*;
 import org.discord.backend.entity.*;
@@ -34,9 +35,11 @@ public class DirectMessageService {
         Member member = memberRepository
                 .findFirstByUserAndServer(User.builder().id(data.getUserId()).build(), Server.builder().id(data.getServerId()).build())
                 .orElseThrow(()->new DiscordException("Member Not Found",HttpStatus.NOT_FOUND));
+        System.out.println(data.getConversationId());
         Conversation conversation = conversationRepository
-                .findFirstByIdAndMemberOne_IdOrMemberTwo_Id(data.getConversationId(), member.getId(), member.getId())
+                .findFirstByIdAndMemberOneOrMemberTwoId(data.getConversationId(), new ObjectId(member.getId()))
                 .orElseThrow(()->new DiscordException("Conversation Not Found",HttpStatus.NOT_FOUND));
+        System.out.println(conversation.getId());
         DirectMessage message = DirectMessage.builder()
                 .content(data.getContent())
                 .fileUrl(data.getFileUrl())
@@ -56,7 +59,7 @@ public class DirectMessageService {
                 .findFirstByUserAndServer(User.builder().id(userId).build(),Server.builder().id(serverId).build())
                 .orElseThrow(()->new DiscordException("Member Not Found",HttpStatus.NOT_FOUND));
         Conversation conversation = conversationRepository
-                .findFirstByIdAndMemberOne_IdOrMemberTwo_Id(conversationId, member.getId(), member.getId())
+                .findFirstByIdAndMemberOneOrMemberTwoId(conversationId, new ObjectId(member.getId()) )
                 .orElseThrow(()->new DiscordException("Conversation Not Found",HttpStatus.NOT_FOUND));
         List<DirectMessage> messages;
         PageRequest pageRequest = PageRequest.of(0,pageSize);
@@ -83,7 +86,7 @@ public class DirectMessageService {
                 .findFirstByUserAndServer(User.builder().id(data.getUserId()).build(),Server.builder().id(data.getServerId()).build())
                 .orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
         Conversation conversation = conversationRepository
-                .findFirstByIdAndMemberOne_IdOrMemberTwo_Id(data.getConversationId(), member.getId(), member.getId())
+                .findFirstByIdAndMemberOneOrMemberTwoId(data.getConversationId(),new ObjectId(member.getId()))
                 .orElseThrow(()->new DiscordException("Conversation Not Found",HttpStatus.NOT_FOUND));
         DirectMessage message = directMessageRepository.findById(data.getMessageId()).orElseThrow(()->new DiscordException("Message Not found",HttpStatus.NOT_FOUND));
         boolean isOwner = message.getMember().getId().equals(member.getId());
