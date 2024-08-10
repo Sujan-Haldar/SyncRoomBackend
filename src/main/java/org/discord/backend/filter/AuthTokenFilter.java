@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.discord.backend.auth.UserInfoUserDetails;
 import org.discord.backend.entity.User;
 import org.discord.backend.repository.UserRepository;
@@ -21,12 +23,11 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
-    @Autowired
-    private JWTUtils jwtUtils;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final JWTUtils jwtUtils;
+    private final UserRepository userRepository;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
@@ -40,7 +41,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             }
 
         }catch (Exception e){
-            System.out.println("Filter Chain Exception");
+            log.info("Filter Chain Exception");
         }
         filterChain.doFilter(request,response);
 

@@ -69,18 +69,6 @@ public class ServerService {
                .build();
        Channel savedChannel = channelRepository.save(channel);
        channelCascade.onAfterSaveChannel(savedChannel);
-//       List<Member> members = new ArrayList<>();
-//       List<Channel> channels = new ArrayList<>();
-//       members.add(savedMember);
-//       channels.add(savedChannel);
-//
-//       savedServer.setChannels(channels);
-//       savedServer.setMembers(members);
-//       user.getMembers().add(savedMember);
-//       user.getChannels().add(savedChannel);
-//       user.getServers().add(savedServer);
-//       userRepository.save(user);
-//       savedServer = serverRepository.save(savedServer);
        return Optional.of(convertToDto.serverToServerResponseDtoBasicInfo(savedServer));
 
     }

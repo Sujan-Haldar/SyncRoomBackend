@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.discord.backend.entity.User;
 import org.discord.backend.service.UserService;
 import org.discord.backend.util.JWTUtils;
@@ -21,15 +22,12 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class OAuth2LoginSucessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     @Value("${frontend.url}")
     private String frontendUrl;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JWTUtils jwtUtils;
+    private final  UserService userService;
+    private final JWTUtils jwtUtils;
 
 
     @Override
@@ -64,14 +62,14 @@ public class OAuth2LoginSucessHandler extends SavedRequestAwareAuthenticationSuc
             }
 
         }
-        String authToken = jwtUtils.generateToken(users.getFirst().getId());
+        String authToken = jwtUtils.generateToken(users.getFirst().getId(),false);
         Cookie cookie = new Cookie("DISCORDTOKEN", authToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60);
         response.addCookie(cookie);
-        String redirectUrl = "http://localhost:3000/oauth2/redirect";
+        String redirectUrl =frontendUrl+"/oauth2/redirect";
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }

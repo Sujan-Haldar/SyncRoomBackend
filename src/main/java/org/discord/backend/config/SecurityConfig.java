@@ -3,11 +3,13 @@ package org.discord.backend.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
 import org.discord.backend.auth.AuthEntryPoint;
 import org.discord.backend.auth.OAuth2LoginSucessHandler;
 import org.discord.backend.auth.UserInfoUserDetailsService;
 import org.discord.backend.filter.AuthTokenFilter;
 import org.discord.backend.auth.CustomOAuth2UserService;
+import org.discord.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,15 +40,13 @@ import java.util.Map;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
-    @Autowired
-    private OAuth2LoginSucessHandler oAuth2LoginSucessHandler;
-    @Autowired
-    private CustomOAuth2UserService oAuth2UserService;
-    @Autowired
-    private AuthTokenFilter authTokenFilter;
-    @Autowired
-    private AuthEntryPoint authEntryPoint;
+    private final OAuth2LoginSucessHandler oAuth2LoginSucessHandler;
+    private final CustomOAuth2UserService oAuth2UserService;
+    private final AuthTokenFilter authTokenFilter;
+    private final AuthEntryPoint authEntryPoint;
+    private final UserRepository userRepository;
     @Value("${frontend.url}")
     private String frontendUrl;
     @Bean
@@ -54,11 +54,13 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(cors->cors.configurationSource(corsConfigurationSource()));
         http.authorizeHttpRequests((requests) ->
-                requests.requestMatchers("/api/v1/register",
-                                "/api/v1/login",
-                                "/api/v1/is-login",
-                                "/api/v1/access-token",
-                        "/api/v1/servers"
+                requests.requestMatchers("/api/v1/auth/sign-in",
+                                "/api/v1/auth/sign-up",
+                                "/api/v1/auth/is-login",
+                                "/api/v1/auth/access-token",
+                                "/api/v1/auth/otp",
+                                "/api/v1/auth/forget-password",
+                                "/api/v1/auth/sign-out"
                         ).permitAll()
                         .anyRequest().authenticated()
         );
@@ -92,7 +94,7 @@ public class SecurityConfig {
     }
     @Bean
     public UserDetailsService userDetailsService(){
-        return new UserInfoUserDetailsService();
+        return new UserInfoUserDetailsService(userRepository);
     }
     @Bean
     public PasswordEncoder passwordEncoder(){

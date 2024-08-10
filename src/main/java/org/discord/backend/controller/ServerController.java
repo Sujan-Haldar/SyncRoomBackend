@@ -71,4 +71,5 @@ public class ServerController {
         return ResponseEntity.ok(new DiscordSuccessResponse(""));
     }
 
+
 }
