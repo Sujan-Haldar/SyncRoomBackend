@@ -8,7 +8,7 @@ RUN mvn clean install -U
 # Stage 2: Run the Spring Boot application
 FROM openjdk:21
 WORKDIR /app
-COPY --from=build /target/*.jar /app.jar
+COPY --from=build /app/target/*.jar /app/app.jar
 
 # Expose the port that your Spring Boot app runs on
 EXPOSE 8080
