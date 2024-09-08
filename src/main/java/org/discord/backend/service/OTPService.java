@@ -1,6 +1,7 @@
 package org.discord.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.discord.backend.exception.DiscordException;
 import org.discord.backend.util.OTPType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OTPService {
     private final StringRedisTemplate redisTemplate;
@@ -20,6 +22,7 @@ public class OTPService {
 
     public void saveOtp(String email, String otp , OTPType otpType) {
         redisTemplate.opsForValue().set(email+otpType.toString(), otp, 5, TimeUnit.MINUTES); // Save OTP with a TTL of 5 minutes
+        log.info("Otp saved sucessfully.");
     }
 
     public String getOtp(String email,OTPType otpType) {
@@ -37,8 +40,10 @@ public class OTPService {
         try{
            this.saveOtp(email,otp,otpType);
            emailService.sendSimpleEmail(email,"DISCORD OTP","This is your otp "+otp);
+            log.info("Otp sent sucessfully.");
         }catch (Exception e){
-            e.printStackTrace();
+            log.info("Error : Not able to sent otp");
+            log.info("Error : "+e.getMessage());
             throw new DiscordException("E-10012",HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

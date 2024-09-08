@@ -1,7 +1,6 @@
 package org.discord.backend.service;
 
-import com.corundumstudio.socketio.SocketIOServer;
-import lombok.Data;
+
 import lombok.RequiredArgsConstructor;
 import org.discord.backend.cascade.MessageCascade;
 import org.discord.backend.dto.MessageCreateRequestDto;
@@ -12,8 +11,6 @@ import org.discord.backend.exception.DiscordException;
 import org.discord.backend.repository.ChannelRepository;
 import org.discord.backend.repository.MemberRepository;
 import org.discord.backend.repository.MessageRepository;
-import org.discord.backend.repository.ServerRepository;
-import org.discord.backend.socketIO.SocketIoService;
 import org.discord.backend.util.Role;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -31,7 +28,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final MessageCascade messageCascade;
     private final  ConvertToDto convertToDto;
-    private final SocketIoService socketIoService;
+    private final RedisService redisService;
     public Optional<MessageResponseDto> createMessage(MessageCreateRequestDto data) throws DiscordException {
         if(data.getServerId() == null) throw new DiscordException("", HttpStatus.BAD_REQUEST);
         if(data.getChannelId() == null) throw new DiscordException("",HttpStatus.BAD_REQUEST);
@@ -51,7 +48,7 @@ public class MessageService {
                 .build();
         message = messageRepository.save(message);
         messageCascade.onAfterSaveMessage(message);
-        socketIoService.sendNewMessageToChannel(data.getChannelId(), convertToDto.messageToMessageResponseDto(message));
+        redisService.sendNewMessageToChannel(data.getChannelId(), convertToDto.messageToMessageResponseDto(message));
         return Optional.of(convertToDto.messageToMessageResponseDto(message));
     }
 
@@ -110,7 +107,7 @@ public class MessageService {
             message.setContent(data.getContent());
         }
         message = messageRepository.save(message);
-        socketIoService.sendUpdateOrDeleteMessageToChannel(data.getChannelId(), convertToDto.messageToMessageResponseDto(message));
+        redisService.sendUpdateOrDeleteMessageToChannel(data.getChannelId(), convertToDto.messageToMessageResponseDto(message));
         return Optional.of(convertToDto.messageToMessageResponseDto(message));
     }
 }

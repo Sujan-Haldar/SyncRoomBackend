@@ -9,7 +9,6 @@ import org.discord.backend.exception.DiscordException;
 import org.discord.backend.repository.ConversationRepository;
 import org.discord.backend.repository.DirectMessageRepository;
 import org.discord.backend.repository.MemberRepository;
-import org.discord.backend.socketIO.SocketIoService;
 import org.discord.backend.util.Role;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ public class DirectMessageService {
     private final DirectMessageRepository directMessageRepository;
     private final ConvertToDto convertToDto;
     private final DirectMessageCascade directMessageCascade;
-    private final SocketIoService socketIoService;
+    private final RedisService redisService;
     public Optional<MessageResponseDto> createMessage(DirectMessageCreateRequestDto data) throws DiscordException {
         if(data.getServerId() == null || data.getServerId().isEmpty()) throw new DiscordException("", HttpStatus.BAD_REQUEST);
         if(data.getConversationId() == null || data.getConversationId().isEmpty()) throw new DiscordException("",HttpStatus.BAD_REQUEST);
@@ -48,7 +47,7 @@ public class DirectMessageService {
                 .build();
         message = directMessageRepository.save(message);
         directMessageCascade.onAfterSaveMessage(message);
-        socketIoService.sendNewMessageToConversation(data.getConversationId(), convertToDto.directMessageToMessageResponseDto(message));
+        redisService.sendNewMessageToConversation(data.getConversationId(), convertToDto.directMessageToMessageResponseDto(message));
         return Optional.of(convertToDto.directMessageToMessageResponseDto(message));
     }
     public Optional<List<MessageResponseDto>> getMessages(String userId, String serverId, String conversationId, String cursor, int pageSize) throws DiscordException {
@@ -104,7 +103,7 @@ public class DirectMessageService {
             message.setContent(data.getContent());
         }
         message = directMessageRepository.save(message);
-        socketIoService.sendUpdateOrDeleteMessageToConversation(data.getConversationId(), convertToDto.directMessageToMessageResponseDto(message));
+        redisService.sendUpdateOrDeleteMessageToConversation(data.getConversationId(), convertToDto.directMessageToMessageResponseDto(message));
         return Optional.of(convertToDto.directMessageToMessageResponseDto(message));
     }
 }
