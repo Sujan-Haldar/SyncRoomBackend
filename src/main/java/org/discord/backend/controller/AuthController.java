@@ -71,6 +71,7 @@ public class AuthController {
                 }
             }
         }
+        log.info("DISCORDTOKEN :"+token);
         if(token!=null && jwtUtils.validateJwtToken(token)){
             HashMap<String,Object> map = new HashMap<>();
             User user = userRepository.findById(jwtUtils.getUserMongoId(token)).orElseThrow(()->new DiscordException("",HttpStatus.NOT_FOUND));
@@ -78,7 +79,6 @@ public class AuthController {
             map.put("id", user.getId());
             map.put("user", convertToDto.userToUserResponseDto(user));
             return  ResponseEntity.ok().body(new DiscordSuccessResponse("",map));
-
         }
         else{
             throw new DiscordException("E-10013",HttpStatus.UNAUTHORIZED);
